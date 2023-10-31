@@ -10,7 +10,7 @@ export class Evento{
     tags: Array<Tag>;
     usuarios: Array<Investigador>;
     
-    constructor(nombre: String, fecha: Date, fechaCierreConvocatoria: Date, 
+    constructor(nombre: String, fecha: Date, fechaCierreConvocatoria: Date,
         lugarDesarrollo: LugarDesarrollo, tags: Array<Tag>, usuarios: Array<Investigador>){
             this.fecha = fecha;
             this.fechaCierreConvocatoria = fechaCierreConvocatoria;

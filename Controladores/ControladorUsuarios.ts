@@ -1,10 +1,8 @@
-import { verificarDominio } from '../verificacionDominio';
 import { Router } from 'express';
 import { Investigador } from '../Investigador';
 import { AccesoUsuario } from '../AccesoBD/AccesoUsuarios';
 import { Db, MongoClient } from 'mongodb';
 import { generarClaveInv, verificarClaveAdmin } from '../jwt';
-import { checkAdmin } from './ControladorAdministradores';
 
 // Regex
 const mailRegex: RegExp = new RegExp("[A-Za-z0-9]+@[a-z]+\.[a-z]{2,3}");
@@ -21,21 +19,21 @@ var accesoUsuario: AccesoUsuario = new AccesoUsuario(url, database, database.col
 export const RutasUsuarios = Router();
 
 //lista de usuarios
-RutasUsuarios.get("/investigadores", checkAdmin, (_req, _res) => {
+RutasUsuarios.get("/investigadores", verificarClaveAdmin, (_req, _res) => {
     accesoUsuario.getUsuarios().then((v) => {
         _res.send(v);
     })
 })
 
 //datos del usuario segun id
-RutasUsuarios.get("/investigadores/:nombre", checkAdmin, (_req, _res) => {
+RutasUsuarios.get("/investigadores/:nombre", verificarClaveAdmin, (_req, _res) => {
     accesoUsuario.getUsuario(_req.params.nombre).then((v) => {
         _res.send(v);
     })
 })
 
 //subir nuevo usuario
-RutasUsuarios.post("/investigadores", checkAdmin, (_req, _res) => {
+RutasUsuarios.post("/investigadores", verificarClaveAdmin, (_req, _res) => {
     console.log(_req.body)
     accesoUsuario.getUsuario(_req.body.nombre).then((v) => {
         if (v != undefined) {
@@ -51,7 +49,7 @@ RutasUsuarios.post("/investigadores", checkAdmin, (_req, _res) => {
 })
 
 //borrar usuario
-RutasUsuarios.delete("/investigadores/:nombre", checkAdmin, (_req, _res) => {
+RutasUsuarios.delete("/investigadores/:nombre", verificarClaveAdmin, (_req, _res) => {
     accesoUsuario.getUsuario(_req.params.nombre).then((v) => {
         if (v == undefined) {
             _res.send("no existe");
@@ -64,7 +62,7 @@ RutasUsuarios.delete("/investigadores/:nombre", checkAdmin, (_req, _res) => {
     })
 })
 //modificar todo el usuario
-RutasUsuarios.put("/investigadores/:nombre", checkAdmin, (_req, _res) => {
+RutasUsuarios.put("/investigadores/:nombre", verificarClaveAdmin, (_req, _res) => {
     accesoUsuario.getUsuario(_req.params.nombre).then((v) => {
         if (v == undefined) {
             _res.send("no existe");
@@ -80,7 +78,7 @@ RutasUsuarios.put("/investigadores/:nombre", checkAdmin, (_req, _res) => {
 })
 
 //modificar parte del usuario
-RutasUsuarios.patch("/investigadores/:nombre", checkAdmin, (_req, _res) => {
+RutasUsuarios.patch("/investigadores/:nombre", verificarClaveAdmin, (_req, _res) => {
     accesoUsuario.getUsuario(_req.params.nombre).then((v) => {
         if (v == undefined) {
             _res.send("no existe");

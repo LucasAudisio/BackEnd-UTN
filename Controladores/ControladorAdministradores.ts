@@ -1,9 +1,9 @@
-import { verificarDominio } from '../verificacionDominio';
 import { Router } from 'express';
 import { AccesoUsuario } from '../AccesoBD/AccesoUsuarios';
 import { Db, MongoClient } from 'mongodb';
-import { generarClaveAdmin, verificarClaveAdmin } from '../jwt';
+import { claveSecretaAdmin, generarClaveAdmin, verificarClaveAdmin } from '../jwt';
 import { Administrador } from '../Administrador';
+import jwt from "jsonwebtoken";
 
 // Base de datos
 const url: string = "mongodb://127.0.0.1:27017/Gestion-de-eventos-academicos";
@@ -11,9 +11,8 @@ const client: MongoClient = new MongoClient(url);
 const database: Db = client.db("Gestion-de-eventos-academicos");
 var accesoUsuario: AccesoUsuario = new AccesoUsuario(url, database, database.collection("Administrador"));
 
-accesoUsuario.borrarUsuario("admin");
 const usuarioTemp = new Administrador("admin", "admin123", true);
-accesoUsuario.subirUsuario(usuarioTemp);
+accesoUsuario.subirUsuario(usuarioTemp); 
 
 export function checkAdmin(req: any, res: any, next:any){
     accesoUsuario.getUsuario(req.body.nombreUsuario).then((v) => {
@@ -28,7 +27,9 @@ export function checkAdmin(req: any, res: any, next:any){
 }
 
 export function checkSuper(req: any, res: any, next:any){
-    accesoUsuario.getUsuario(req.body.nombreUsuario).then((v) => {
+    const clave = req.headers.authorization;
+    const payload: any = jwt.verify(clave, claveSecretaAdmin);
+    accesoUsuario.getUsuario(payload.nombre).then((v) => {
         if(v == undefined){
             res.status(404).send("usuario no encontrado");
             return;

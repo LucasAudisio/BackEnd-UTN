@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 
 const claveSecretaInv = "Utn-Clave-Inv";
-const claveSecretaAdmin = "Utn-Clave-Admin";
+export const claveSecretaAdmin = "Utn-Clave-Admin";
 
 //investigador
 export function generarClaveInv(nombre: String): string{
@@ -22,13 +22,6 @@ export function verificarClaveInv(req: any, res: any, next: any){
 
     try {
         const payload: any = jwt.verify(clave, claveSecretaInv);
-        const nombreGenerado: string = payload.nombre;
-
-        const nombreSolicitud: string = req.body.nombreUsuario;
-
-        if (nombreGenerado !== nombreSolicitud) {
-            return res.status(401).send('Unauthorized: Invalid token.');
-        }
         next();
     }
     catch (err) {
@@ -55,13 +48,6 @@ export function verificarClaveAdmin(req: any, res: any, next: any){
 
     try {
         const payload: any = jwt.verify(clave, claveSecretaAdmin);
-        const nombreGenerado: string = payload.nombre;
-
-        const nombreSolicitud: string = req.body.nombreUsuario;
-
-        if (nombreGenerado !== nombreSolicitud) {
-            return res.status(401).send('Unauthorized: Invalid token.');
-        }
         next();
     }
     catch (err) {
