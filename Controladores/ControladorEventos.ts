@@ -57,11 +57,11 @@ RutasEventos.post("/eventos", verificarClaveAdmin, (_req,_res) => {
         _res.status(400).send("no se proporcionaron todos los datos");
         return;
     }
-    if(isValidDate(_req.body.fecha)){
+    if(!isValidDate(_req.body.fecha)){
         _res.status(400).send("fecha invalida");
         return;
     }
-    if(isValidDate(_req.body.fechaCierreConvocatoria)){
+    if(!isValidDate(_req.body.fechaCierreConvocatoria)){
         _res.status(400).send("fecha del cierre de la convocatoria invalida");
         return;
     }
