@@ -12,15 +12,15 @@ const contraRegex: RegExp = new RegExp("^(?=.*[A-Z])(?=.*[0-9]).{8,}$");
 const url: string = "mongodb://127.0.0.1:27017/Gestion-de-eventos-academicos";
 const client: MongoClient = new MongoClient(url);
 const database: Db = client.db("Gestion-de-eventos-academicos");
-var accesoUsuario: AccesoUsuario = new AccesoUsuario(url, database, database.collection("Administrador"));
+export var accesoAdmin: AccesoUsuario = new AccesoUsuario(url, database, database.collection("Administrador"));
 
-accesoUsuario.borrarUsuario("admin").then((v) => {
+accesoAdmin.borrarUsuario("admin").then((v) => {
     const usuarioTemp = new Administrador("admin", "Admin123", true);
-    accesoUsuario.subirUsuario(usuarioTemp);    
+    accesoAdmin.subirUsuario(usuarioTemp);    
 });
 
 export function checkAdmin(req: any, res: any, next:any){
-    accesoUsuario.getUsuario(req.body.nombreUsuario).then((v) => {
+    accesoAdmin.getUsuario(req.body.nombreUsuario).then((v) => {
         if(v == undefined){
             res.status(404).send("usuario no encontrado");
             return;
@@ -34,7 +34,7 @@ export function checkAdmin(req: any, res: any, next:any){
 export function checkSuper(req: any, res: any, next:any){
     const clave = req.headers.authorization;
     const payload: any = jwt.verify(clave, claveSecretaAdmin);
-    accesoUsuario.getUsuario(payload.nombre).then((v) => {
+    accesoAdmin.getUsuario(payload.nombre).then((v) => {
         if(v == undefined){
             res.status(404).send("usuario no encontrado");
             return;
@@ -58,13 +58,13 @@ RutasAdmin.post("/LoginAdministrador", (req, res) => {
         res.status(400).send("No se proporcionaron todos los datos");
         return;
     }
-    accesoUsuario.getUsuario(req.body.nombre).then((b) => {
+    accesoAdmin.getUsuario(req.body.nombre).then((b) => {
         if(b == undefined){
             res.status(400).send("No existe");
             return;
         }
         else{
-            accesoUsuario.login(req.body.nombre, req.body.contraseña).then((v) => {
+            accesoAdmin.login(req.body.nombre, req.body.contraseña).then((v) => {
                 if (v) {
                     if (v == "todo bien") {
                         let respuesta: JSON = JSON.parse(JSON.stringify(b));
@@ -82,14 +82,14 @@ RutasAdmin.post("/LoginAdministrador", (req, res) => {
 
 // Lista admin
 RutasAdmin.get("/administradores", (req, res) =>{
-    accesoUsuario.getUsuarios().then((v) => {
+    accesoAdmin.getUsuarios().then((v) => {
         res.json(v);
     })
 })
 
 // Admin segun nombre
 RutasAdmin.get("/administradores/:nombre", (req, res) =>{
-    accesoUsuario.getUsuario(req.params.nombre).then((v) => {
+    accesoAdmin.getUsuario(req.params.nombre).then((v) => {
         res.json(v);
     })
 })
@@ -110,14 +110,14 @@ RutasAdmin.post("/administradores", (req, res) => {
         return;
     }
 
-    accesoUsuario.getUsuario(req.body.nombre).then((v) => {
+    accesoAdmin.getUsuario(req.body.nombre).then((v) => {
         if (v != undefined) {
             res.status(400).send("no se pudo crear, nombre ya en uso");
             return;
         }
         else {
             const usuarioTemp = new Administrador(req.body.nombre, req.body.contraseña, req.body.esSuper)
-            accesoUsuario.subirUsuario(usuarioTemp);
+            accesoAdmin.subirUsuario(usuarioTemp);
             res.json(usuarioTemp);
         }
     })
@@ -125,48 +125,21 @@ RutasAdmin.post("/administradores", (req, res) => {
 
 //borrar admin
 RutasAdmin.delete("/administradores/:nombre", (req, res) => {
-    accesoUsuario.getUsuario(req.params.nombre).then((v) => {
+    accesoAdmin.getUsuario(req.params.nombre).then((v) => {
         if (v == undefined) {
             res.status(400).send("no existe");
             return;
         }
         else {
-            accesoUsuario.borrarUsuario(req.params.nombre);
+            accesoAdmin.borrarUsuario(req.params.nombre);
             res.status(204).send();
-        }
-    })
-})
-//modificar todo el admin
-RutasAdmin.put("/administradores/:nombre", (req, res) => {
-    if(!req.body.contraseña || req.body.esSuper != null){
-        res.status(400).send("no se proporcionaron todos los datos");
-        return;
-    }
-    if(!contraRegex.test(req.body.contraseña)){
-        res.status(400).send("La contraseña debe tener 8 caracteres minimo, un numero y un caracter especial");
-        return;
-    }
-    if(req.body.esSuper != true && req.body.esSuper != false){
-        res.status(400).send("dato invalido en el campo esSuper");
-        return;
-    }
-    accesoUsuario.getUsuario(req.params.nombre).then((v) => {
-        if (v == undefined) {
-            res.send("no existe");
-            return;
-        }
-        else {
-            const usuarioTemp = new Administrador(req.body.nombre, req.body.contraseña, req.body.esSuper);
-            usuarioTemp.nombre = v.nombre;
-            accesoUsuario.modificarUsuario(usuarioTemp);
-            res.json(usuarioTemp);
         }
     })
 })
 
 //modificar parte del admin
 RutasAdmin.patch("/administradores/:nombre", (req, res) => {
-    accesoUsuario.getUsuario(req.params.nombre).then((v) => {
+    accesoAdmin.getUsuario(req.params.nombre).then((v) => {
         if (v == undefined) {
             res.send("no existe");
             return;
@@ -179,7 +152,7 @@ RutasAdmin.patch("/administradores/:nombre", (req, res) => {
             if (req.body.esSuper) {
                 usuarioTemp.esSuper = req.body.esSuper;
             }
-            accesoUsuario.modificarUsuario(usuarioTemp);
+            accesoAdmin.modificarUsuario(usuarioTemp);
             res.json(usuarioTemp);
         }
     })

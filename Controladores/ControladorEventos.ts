@@ -108,11 +108,20 @@ RutasEventos.patch("/eventos/:nombre", verificarClaveAdmin, (_req,_res) => {
             var eventoTemp: Evento = new Evento(v.nombre, v.fecha, v.fechaCierreConvocatoria
                 , v.lugarDesarrollo, v.tags, v.usuarios);
             if(_req.body.fecha){
+                if(!isValidDate(_req.body.fecha)){
+                    _res.status(400).send("fecha invalida");
+                    return;
+                }
                 eventoTemp.fecha = _req.body.fecha;
             }
             if(_req.body.fechaCierreConvocatoria){
+                if(!isValidDate(_req.body.fechaCierreConvocatoria)){
+                    _res.status(400).send("fecha del cierre de la convocatoria invalida");
+                    return;
+                }
                 eventoTemp.fechaCierreConvocatoria = _req.body.fechaCierreConvocatoria;
             }
+            // checkear lugar existe, tags validos y usuarios validos
             if(_req.body.lugarDesarrollo){
                 eventoTemp.lugarDesarrollo = _req.body.lugarDesarrollo;
             }

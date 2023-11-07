@@ -7,13 +7,12 @@ import { generarClaveInv, verificarClaveAdmin } from '../jwt';
 // Regex
 const mailRegex: RegExp = new RegExp("[A-Za-z0-9]+@[a-z]+\.[a-z]{2,3}");
 const contraRegex: RegExp = new RegExp("[a-z0-9A-Z]");
-const fotoRegex: RegExp = new RegExp("^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$");
 
 // Base de datos
 const url: string = "mongodb://127.0.0.1:27017/Gestion-de-eventos-academicos";
 const client: MongoClient = new MongoClient(url);
 const database: Db = client.db("Gestion-de-eventos-academicos");
-var accesoUsuario: AccesoUsuario = new AccesoUsuario(url, database, database.collection("Investigador"))
+export var accesoUsuario: AccesoUsuario = new AccesoUsuario(url, database, database.collection("Investigador"))
 
 // Enrutador
 export const RutasUsuarios = Router();
@@ -35,13 +34,27 @@ RutasUsuarios.get("/investigadores/:nombre", verificarClaveAdmin, (_req, _res) =
 //subir nuevo usuario
 RutasUsuarios.post("/investigadores", verificarClaveAdmin, (_req, _res) => {
     console.log(_req.body)
+    if(!_req.body.correo ||  !_req.body.nombre || !_req.body.contrasenia ||  !_req.body.fotoPerfil){
+        _res.status(400).send("no se proporcionaron todos los datos");
+        return;
+    }
+    if (!mailRegex.test(_req.body.correo)) {
+        _res.status(400).send("mail invalido");
+        return;
+    
+    }
+    if (_req.body.contrasenia.length < 8 || !contraRegex.test(_req.body.contrasenia)) {
+        _res.status(400).send("contraseña insegura");
+        return;
+    }
+
     accesoUsuario.getUsuario(_req.body.nombre).then((v) => {
         if (v != undefined) {
-            _res.send("no se pudo crear, nombre ya en uso");
+            _res.status(400).send("no se pudo crear, nombre ya en uso");
             return;
         }
         else {
-            const usuarioTemp = new Investigador(_req.body.correo, _req.body.contraseña, _req.body.nombre, _req.body.foto);
+            const usuarioTemp = new Investigador(_req.body.correo, _req.body.contrasenia, _req.body.nombre, _req.body.fotoPerfil);
             accesoUsuario.subirUsuario(usuarioTemp);
             _res.json(usuarioTemp);
         }
@@ -61,21 +74,6 @@ RutasUsuarios.delete("/investigadores/:nombre", verificarClaveAdmin, (_req, _res
         }
     })
 })
-//modificar todo el usuario
-RutasUsuarios.put("/investigadores/:nombre", verificarClaveAdmin, (_req, _res) => {
-    accesoUsuario.getUsuario(_req.params.nombre).then((v) => {
-        if (v == undefined) {
-            _res.send("no existe");
-            return;
-        }
-        else {
-            const usuarioTemp = new Investigador(_req.body.correo, _req.body.contraseña, _req.body.nombre, _req.body.foto);
-            usuarioTemp.nombre = v.nombre;
-            accesoUsuario.modificarUsuario(usuarioTemp);
-            _res.json(usuarioTemp);
-        }
-    })
-})
 
 //modificar parte del usuario
 RutasUsuarios.patch("/investigadores/:nombre", verificarClaveAdmin, (_req, _res) => {
@@ -87,9 +85,16 @@ RutasUsuarios.patch("/investigadores/:nombre", verificarClaveAdmin, (_req, _res)
         else {
             var usuarioTemp = new Investigador(v.correo, v.contraseña, v.nombre, v.foto);
             if (_req.body.correo) {
+                if(!mailRegex.test(_req.body.correo)){
+                    _res.status(400).send("mail invalido")
+                }
                 usuarioTemp.correo = _req.body.correo;
             }
             if (_req.body.contraseña) {
+                if (_req.body.contraseña.length < 8 || !contraRegex.test(_req.body.contraseña)) {
+                    _res.status(400).send("contraseña insegura");
+                    return;
+                }
                 usuarioTemp.contraseña = _req.body.contraseña;
             }
             if (_req.body.fotoPerfil) {
