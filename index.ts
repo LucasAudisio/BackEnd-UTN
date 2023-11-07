@@ -39,6 +39,7 @@ app.get('/', (_req, _res) => {
 
 //Middlewares
 app.use('/imagenes', express.static(path.join(__dirname, 'imagenes')));
+app.use('/archivos', express.static(path.join(__dirname, 'archivos')));
 app.use(upload.fields([{ name: 'fotoPerfil' }, {name: "fotoLugar"}]));
 app.use(bodyParser.json());
 app.use("/administradores", checkSuper);

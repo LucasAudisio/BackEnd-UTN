@@ -40,7 +40,7 @@ export class AccesoUsuario{
 
     public async borrarUsuario(nombre: string){
         const filtro = { nombre: nombre };
-        this.collection.findOneAndDelete(filtro);
+        await this.collection.findOneAndDelete(filtro);
     }
 
     public async registrarse(nombre: string, contraseña: string, correo: string){

@@ -5,14 +5,19 @@ import { claveSecretaAdmin, generarClaveAdmin, verificarClaveAdmin } from '../jw
 import { Administrador } from '../Administrador';
 import jwt from "jsonwebtoken";
 
+const mailRegex: RegExp = new RegExp("[A-Za-z0-9]+@[a-z]+\.[a-z]{2,3}");
+const contraRegex: RegExp = new RegExp("^(?=.*[A-Z])(?=.*[0-9]).{8,}$");
+
 // Base de datos
 const url: string = "mongodb://127.0.0.1:27017/Gestion-de-eventos-academicos";
 const client: MongoClient = new MongoClient(url);
 const database: Db = client.db("Gestion-de-eventos-academicos");
 var accesoUsuario: AccesoUsuario = new AccesoUsuario(url, database, database.collection("Administrador"));
 
-const usuarioTemp = new Administrador("admin", "admin123", true);
-accesoUsuario.subirUsuario(usuarioTemp); 
+accesoUsuario.borrarUsuario("admin").then((v) => {
+    const usuarioTemp = new Administrador("admin", "Admin123", true);
+    accesoUsuario.subirUsuario(usuarioTemp);    
+});
 
 export function checkAdmin(req: any, res: any, next:any){
     accesoUsuario.getUsuario(req.body.nombreUsuario).then((v) => {
@@ -49,6 +54,10 @@ export function checkSuper(req: any, res: any, next:any){
 export const RutasAdmin = Router();
 
 RutasAdmin.post("/LoginAdministrador", (req, res) => {
+    if(!req.body.nombre || !req.body.contraseña){
+        res.status(400).send("No se proporcionaron todos los datos");
+        return;
+    }
     accesoUsuario.getUsuario(req.body.nombre).then((b) => {
         if(b == undefined){
             res.status(400).send("No existe");
@@ -87,9 +96,23 @@ RutasAdmin.get("/administradores/:nombre", (req, res) =>{
 
 //subir nuevo admin
 RutasAdmin.post("/administradores", (req, res) => {
+    console.log(req.body.esSuper)
+    if(!req.body.nombre || !req.body.contraseña){
+        res.status(400).send("no se proporcionaron todos los datos");
+        return;
+    }
+    if(!contraRegex.test(req.body.contraseña)){
+        res.status(400).send("La contraseña debe tener 8 caracteres minimo, un numero y un caracter especial");
+        return;
+    }
+    if(req.body.esSuper != true && req.body.esSuper != false){
+        res.status(400).send("dato invalido en el campo esSuper");
+        return;
+    }
+
     accesoUsuario.getUsuario(req.body.nombre).then((v) => {
         if (v != undefined) {
-            res.send("no se pudo crear, nombre ya en uso");
+            res.status(400).send("no se pudo crear, nombre ya en uso");
             return;
         }
         else {
@@ -104,7 +127,7 @@ RutasAdmin.post("/administradores", (req, res) => {
 RutasAdmin.delete("/administradores/:nombre", (req, res) => {
     accesoUsuario.getUsuario(req.params.nombre).then((v) => {
         if (v == undefined) {
-            res.send("no existe");
+            res.status(400).send("no existe");
             return;
         }
         else {
@@ -115,6 +138,18 @@ RutasAdmin.delete("/administradores/:nombre", (req, res) => {
 })
 //modificar todo el admin
 RutasAdmin.put("/administradores/:nombre", (req, res) => {
+    if(!req.body.contraseña || req.body.esSuper != null){
+        res.status(400).send("no se proporcionaron todos los datos");
+        return;
+    }
+    if(!contraRegex.test(req.body.contraseña)){
+        res.status(400).send("La contraseña debe tener 8 caracteres minimo, un numero y un caracter especial");
+        return;
+    }
+    if(req.body.esSuper != true && req.body.esSuper != false){
+        res.status(400).send("dato invalido en el campo esSuper");
+        return;
+    }
     accesoUsuario.getUsuario(req.params.nombre).then((v) => {
         if (v == undefined) {
             res.send("no existe");

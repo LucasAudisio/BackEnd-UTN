@@ -12,6 +12,30 @@ var accesoEventos: AccesoEvento = new AccesoEvento(url, database, database.colle
 
 export const RutasEventos = Router();
 
+function isValidDate(dateString: string): boolean {
+    const dateParts = dateString.split("-");
+
+    if (dateParts.length !== 3) {
+        return false;
+    }
+
+    const year = parseInt(dateParts[0]);
+    const month = parseInt(dateParts[1]);
+    const day = parseInt(dateParts[2]);
+
+    if (isNaN(year) || isNaN(month) || isNaN(day)) {
+        return false;
+    }
+
+    const date = new Date(year, month - 1, day);
+
+    return (
+        date.getFullYear() === year &&
+        date.getMonth() === month - 1 &&
+        date.getDate() === day
+    );
+}
+
 //lista de eventos
 RutasEventos.get("/eventos", (_req,_res) => {
     accesoEventos.getEventos().then((v)=>{
@@ -29,6 +53,21 @@ RutasEventos.get("/eventos/:nombre", (_req,_res) => {
 //subir nuevo evento
 RutasEventos.post("/eventos", verificarClaveAdmin, (_req,_res) => {
     console.log(_req.body)
+    if(!_req.body.nombre || !_req.body.fecha || !_req.body.fechaCierreConvocatoria || !_req.body.lugarDesarrollo){
+        _res.status(400).send("no se proporcionaron todos los datos");
+        return;
+    }
+    if(isValidDate(_req.body.fecha)){
+        _res.status(400).send("fecha invalida");
+        return;
+    }
+    if(isValidDate(_req.body.fechaCierreConvocatoria)){
+        _res.status(400).send("fecha del cierre de la convocatoria invalida");
+        return;
+    }
+
+    // falta checkear si existe lugar, q sean validos los tags y usuarios
+
     accesoEventos.getEvento(_req.body.nombre).then((v)=>{
         if(v != undefined){
             _res.send("no se pudo crear");
@@ -54,23 +93,6 @@ RutasEventos.delete("/eventos/:nombre", verificarClaveAdmin, (_req,_res) => {
         else{
             accesoEventos.borrarEvento(_req.params.nombre);
             _res.status(204).send();
-        }
-    })
-})
-
-//modificar todo el evento
-RutasEventos.put("/eventos/:nombre", verificarClaveAdmin, (_req,_res) => {
-    accesoEventos.getEvento(_req.params.nombre).then((v)=>{
-        if(v == undefined){
-            _res.send("no existe");
-            return;
-        }
-        else{
-            const eventoTemp: Evento = new Evento(_req.body.nombre, _req.body.fecha, 
-                _req.body.fechaCierreConvocatoria, _req.body.lugarDesarrollo, _req.body.tags,
-                _req.body.usuarios);
-            accesoEventos.modificarEvento(eventoTemp);
-            _res.json(eventoTemp);
         }
     })
 })
