@@ -43,9 +43,9 @@ RutasEventos.get("/eventos", (_req,_res) => {
     })
 })
   
-//datos del usuario segun evento
-RutasEventos.get("/eventos/:nombre", (_req,_res) => {
-    accesoEventos.getEvento(_req.params.nombre).then((v)=>{
+//datos del usuario segun id
+RutasEventos.get("/eventos/:_id", (_req,_res) => {
+    accesoEventos.getEventoPorId(_req.params._id).then((v)=>{
         _res.send(v);
     })
 })
@@ -70,7 +70,7 @@ RutasEventos.post("/eventos", verificarClaveAdmin, (_req,_res) => {
 
     accesoEventos.getEvento(_req.body.nombre).then((v)=>{
         if(v != undefined){
-            _res.send("no se pudo crear");
+            _res.send("no se pudo crear, ya existe un evento con ese nombre");
             return;
         }
         else{
@@ -84,22 +84,22 @@ RutasEventos.post("/eventos", verificarClaveAdmin, (_req,_res) => {
 })
 
 //borrar evento
-RutasEventos.delete("/eventos/:nombre", verificarClaveAdmin, (_req,_res) => {
-    accesoEventos.getEvento(_req.params.nombre).then((v)=>{
+RutasEventos.delete("/eventos/:_id", verificarClaveAdmin, (_req,_res) => {
+    accesoEventos.getEvento(_req.params._id).then((v)=>{
         if(v == undefined){
             _res.send("no existe");
             return;
         }
         else{
-            accesoEventos.borrarEvento(_req.params.nombre);
+            accesoEventos.borrarEvento(_req.params._id);
             _res.status(204).send();
         }
     })
 })
 
 //modificar parte del evento
-RutasEventos.patch("/eventos/:nombre", verificarClaveAdmin, (_req,_res) => {
-    accesoEventos.getEvento(_req.params.nombre).then((v)=>{
+RutasEventos.patch("/eventos/:_id", verificarClaveAdmin, (_req,_res) => {
+    accesoEventos.getEvento(_req.params._id).then((v)=>{
         if(v == undefined){
             _res.send("no existe");
             return;
@@ -131,7 +131,7 @@ RutasEventos.patch("/eventos/:nombre", verificarClaveAdmin, (_req,_res) => {
             if(_req.body.usuarios){
                 eventoTemp.usuarios = _req.body.usuarios;
             }
-            accesoEventos.modificarEvento(eventoTemp);
+            accesoEventos.modificarEvento(eventoTemp, _req.params._id);
             _res.json(eventoTemp);
         }
     })
@@ -145,8 +145,8 @@ RutasEventos.get("/eventosTags", (_req, _res) => {
 })
 
 //busqueda eventos por tags
-RutasEventos.get("/eventos/busquedaTags/:tags", (_req, _res) => {
-    accesoEventos.getEventoTag(_req.params.tags.split(",")).then((v) => {
+RutasEventos.get("/eventos/busquedaTags", (_req, _res) => {
+    accesoEventos.getEventoTag(_req.body.tags).then((v) => {
         _res.json(v);
     })
 })

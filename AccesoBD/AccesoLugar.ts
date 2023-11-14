@@ -1,4 +1,4 @@
-import { Collection, Db } from "mongodb";
+import { Collection, Db, ObjectId } from "mongodb";
 import { LugarDesarrollo } from "../LugarDesarrollo";
 
 export class AccesoLugar{
@@ -16,8 +16,13 @@ export class AccesoLugar{
         return await this.collection.find().toArray();
     }
 
-    public async getLugar(nombre: String){
-        const filtro = {nombre: nombre};
+    public async getLugar(id: string){
+        const filtro = {_id : new ObjectId(id)};
+        return await this.collection.findOne(filtro);
+    }
+
+    public async getLugarPorNombre(nombre: String){
+        const filtro = { nombre: nombre };
         return await this.collection.findOne(filtro);
     }
 
@@ -25,13 +30,13 @@ export class AccesoLugar{
         this.collection.insertOne(JSON.parse(JSON.stringify(lugar)));
     }
 
-    public borrarLugar(nombre: String){
-        const filtro = { nombre: nombre };
+    public borrarLugar(id: string){
+        const filtro = {_id : new ObjectId(id)};
         this.collection.findOneAndDelete(filtro);
     }
 
-    public modificarLugar(lugar: LugarDesarrollo){
-        const filtro = {nombre: lugar.nombre};
+    public modificarLugar(lugar: LugarDesarrollo, id: string){
+        const filtro = {_id : new ObjectId(id)};
         this.collection.findOneAndReplace(filtro, JSON.parse(JSON.stringify(lugar)));
     }
 }

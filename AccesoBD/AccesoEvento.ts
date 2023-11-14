@@ -1,4 +1,4 @@
-import { Collection, Db } from "mongodb";
+import { Collection, Db, ObjectId } from "mongodb";
 import { Evento } from "../Evento";
 
 export class AccesoEvento{
@@ -18,6 +18,12 @@ export class AccesoEvento{
         return usuario;
     }
 
+    public async getEventoPorId(id: string) {
+        const filtro = { _id: new ObjectId(id) };
+        const usuario = await this.collection.findOne(filtro);
+        return usuario;
+    }
+
     public async getEventos(){
         return await this.collection.find().toArray();
     }
@@ -26,8 +32,8 @@ export class AccesoEvento{
         this.collection.insertOne(JSON.parse(JSON.stringify(evento)));
     }
 
-    public async modificarEvento(evento: Evento){
-        const filtro = { nombre: evento.nombre };
+    public async modificarEvento(evento: Evento, id: string){
+        const filtro = { _id: new ObjectId(id) };
         this.collection.findOneAndReplace(filtro, JSON.parse(JSON.stringify(evento)));
     }
 
@@ -37,7 +43,9 @@ export class AccesoEvento{
     }
 
     public async getEventoTag(tags: Array<String>){
+        console.log(tags)
         const filtro = { tags: { $in: tags } };
+        console.log("filto")
         return await this.collection.find(filtro).toArray();
     }
 
