@@ -12,7 +12,7 @@ const database: Db = client.db("Gestion-de-eventos-academicos");
 
 export var accesoLugar: AccesoLugar = new AccesoLugar(url, database, database.collection("LugarDesarrollo"));
 
-const urlImagenes = "http://172.16.255.233:3000/imagenes/"
+const urlImagenes = "http://localhost:3000/imagenes/"
 
 // lista de lugares
 rutasLugar.get("/lugares", verificarClaveAdmin, (req, res) => {
@@ -43,6 +43,7 @@ rutasLugar.get("/lugaresXnombre/:nombre", (req, res) => {
 
 // subir lugar
 rutasLugar.post("/lugares", verificarClaveAdmin, (req, res) => {
+    console.log(req.body)
     if (!req.body.nombre || !req.body.direccion || !req.body.fotoLugar) {
         res.status(400).send("no se proporcionaron todos los datos");
         return;
@@ -54,6 +55,7 @@ rutasLugar.post("/lugares", verificarClaveAdmin, (req, res) => {
         }
         const lugar = new LugarDesarrollo(req.body.direccion, "fotoLugar/" + req.body.fotoLugar, req.body.nombre);
         accesoLugar.subirLugar(lugar).then((b) => {
+            console.log(lugar)
             res.json(lugar);
         });
 

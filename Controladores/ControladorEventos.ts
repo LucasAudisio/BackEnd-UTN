@@ -2,7 +2,7 @@ import { Router } from "express";
 import { Db, MongoClient, ObjectId } from "mongodb";
 import { AccesoEvento } from "../AccesoBD/AccesoEvento";
 import { Evento } from "../Evento";
-import { verificarClaveAdmin } from "../jwt";
+import { verificarClaveAdmin, verificarClaveInv } from "../jwt";
 import { accesoLugar } from "./ControladorLugar";
 const urlArchivos: string = "http://localhost:3000/archivos/"
 
@@ -63,6 +63,10 @@ RutasEventos.get("/eventos", (_req,_res) => {
 
 //datos del usuario segun id
 RutasEventos.get("/eventos/:_id", (_req, _res) => {
+    if(!ObjectId.isValid(_req.params._id)){
+        _res.status(400).send("id invalido");
+        return;
+    }
     accesoEventos.getEventoPorId(_req.params._id).then((v) => {
         if (!v) {
             _res.status(400).send("no existe un evento con ese id");
@@ -75,7 +79,9 @@ RutasEventos.get("/eventos/:_id", (_req, _res) => {
 
 //subir nuevo evento
 RutasEventos.post("/eventos", verificarClaveAdmin, (_req, _res) => {
+    console.log(_req.body)
     if (!_req.body.nombre || !_req.body.fecha || !_req.body.fechaCierreConvocatoria || !_req.body.lugarDesarrollo || !_req.body.descripcion) {
+        console.log("falto algo")
         _res.status(400).send("no se proporcionaron todos los datos");
         return;
     }
@@ -94,6 +100,7 @@ RutasEventos.post("/eventos", verificarClaveAdmin, (_req, _res) => {
             return;
         }
         for(const tag of _req.body.tags){
+            console.log(tag)
             if(typeof tag != "string"){
                 _res.status(400).send("formato de tags invalido");
                 return;
@@ -110,6 +117,7 @@ RutasEventos.post("/eventos", verificarClaveAdmin, (_req, _res) => {
             _res.status(400).send("no existe el lugar");
             return;
         }
+        console.log("a crear")
         accesoEventos.getEvento(_req.body.nombre).then((v) => {
             if (v != undefined) {
                 _res.send("no se pudo crear, ya existe un evento con ese nombre");
@@ -128,6 +136,10 @@ RutasEventos.post("/eventos", verificarClaveAdmin, (_req, _res) => {
 
 //borrar evento
 RutasEventos.delete("/eventos/:_id", verificarClaveAdmin, (_req, _res) => {
+    if(!ObjectId.isValid(_req.params._id)){
+        _res.status(400).send("id invalido");
+        return;
+    }
     accesoEventos.getEventoPorId(_req.params._id).then((v) => {
         if (v == undefined) {
             _res.send("no existe");
@@ -142,6 +154,10 @@ RutasEventos.delete("/eventos/:_id", verificarClaveAdmin, (_req, _res) => {
 
 //modificar parte del evento
 RutasEventos.patch("/eventos/:_id", verificarClaveAdmin, (_req, _res) => {
+    if(!ObjectId.isValid(_req.params._id)){
+        _res.status(400).send("id invalido");
+        return;
+    }
     accesoEventos.getEvento(_req.params._id).then((v) => {
         if (v == undefined) {
             _res.send("no existe");
@@ -193,6 +209,10 @@ RutasEventos.get("/eventosTags/busquedaTags/:tags", (_req, _res) => {
     })
 })
 RutasEventos.patch("/eventos/estado/:_id",  (_req, _res) => {
+    if(!ObjectId.isValid(_req.params._id)){
+        _res.status(400).send("id invalido");
+        return;
+    }
     accesoEventos.getEventoPorId(_req.params._id).then((v) => {
         if (!v) {
             _res.status(400).send("no existe un evento con ese id");
@@ -209,7 +229,12 @@ RutasEventos.patch("/eventos/estado/:_id",  (_req, _res) => {
     })
 })
 
-RutasEventos.post("/eventos/contribucion", (req, res) => {
+RutasEventos.post("/eventos/contribucion", verificarClaveInv, (req, res) => {
+    if(!ObjectId.isValid(req.body.idEvento)){
+        res.status(400).send("id invalido");
+        return;
+    }
+    console.log(req.body)
     if (!req.body.contribucion || !req.body.titulo || !req.body.descripcion || !req.body.idEvento || !req.body.nombreVerificado) {
         res.status(400).send("no se proporcionaron todos los datos");
         return;
@@ -239,5 +264,20 @@ RutasEventos.post("/eventos/contribucion", (req, res) => {
         accesoEventos.realizarAporte(req.body.titulo, req.body.descripcion, req.body.nombreVerificado, req.body.contribucion, req.body.idEvento, "pendiente").then((b) => {
             res.json(b);
         })
+    })
+})
+
+RutasEventos.get("/eventosAportesUsuario", verificarClaveInv, (req, res) => {
+    let contribuciones:any = []
+    accesoEventos.getEventos(0, 9999).then((v) => {
+        var eventos = v.eventos
+        for (let evento of eventos) {
+            for (let contribucion of evento.contribuciones) {
+                if (contribucion.nombreUsuario = req.body.nombreVerificado) {
+                    contribuciones.push(contribucion)
+                }
+            }
+        }
+        res.json(contribuciones)
     })
 })

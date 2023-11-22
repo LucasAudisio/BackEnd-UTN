@@ -78,13 +78,24 @@ export class AccesoEvento{
         return await this.collection.distinct("tags");
     }
 
-    public async realizarAporte(titulo: string, descripcion: string, nombre: string, contribucion: string, idEvento: any, estado: string){
-        return await this.collection.updateOne({_id: idEvento}, { $push: {contribuciones: {
-            titulo: titulo,
-            descripcion: descripcion,
-            nombreUsuario: nombre,
-            contribucion: contribucion,
-            estado: estado
-        }} });
+    public async realizarAporte(titulo: string, descripcion: string, nombre: string, contribucion: string, idEvento: any, estado: string) {
+        let elId = new ObjectId(idEvento)
+        const eventoEncontrado = await this.collection.find({ _id: elId }).toArray();
+        if (eventoEncontrado.length > 0) {
+            return await this.collection.updateOne({ _id: elId }, {
+                $push: {
+                    contribuciones: {
+                        titulo: titulo,
+                        descripcion: descripcion,
+                        nombreUsuario: nombre,
+                        contribucion: contribucion,
+                        estado: estado
+                    }
+                }
+            });
+        }
+        else{
+            console.log("no lo encuentra")
+        }
     }
 }

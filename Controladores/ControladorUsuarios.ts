@@ -6,7 +6,7 @@ import { generarClaveInv, verificarClaveAdmin, verificarClaveInv } from '../jwt'
 
 // Regex
 const mailRegex: RegExp = new RegExp("[A-Za-z0-9]+@[a-z]+\.[a-z]{2,3}");
-const contraRegex: RegExp = new RegExp("[a-z0-9A-Z]");
+const contraRegex: RegExp = new RegExp("(?=.*[0-9])(?=.*[A-Z])[a-zA-Z0-9]");
 
 // Base de datos
 const url: string = "mongodb://127.0.0.1:27017/Gestion-de-eventos-academicos";
@@ -34,6 +34,18 @@ RutasUsuarios.get("/investigadores/:nombre", verificarClaveAdmin, (_req, _res) =
         _res.send(v);
     })
 })
+
+//datos del usuario segun id
+RutasUsuarios.get("/investigadoresInv/:nombre", verificarClaveInv, (_req, _res) => {
+    accesoUsuario.getUsuario(_req.params.nombre).then((v) => {
+        if(!v){
+            _res.status(400).send("este usuario no existe");
+            return;
+        }
+        _res.send(v);
+    })
+})
+
 
 //subir nuevo usuario
 RutasUsuarios.post("/investigadores", verificarClaveAdmin, (_req, _res) => {
@@ -81,7 +93,6 @@ RutasUsuarios.delete("/investigadores/:nombre", verificarClaveAdmin, (_req, _res
 
 //modificarse asi mismo
 RutasUsuarios.patch("/investigadoresEdit", verificarClaveInv, (_req, _res) => {
-    console.log(_req.headers.authorization)
     accesoUsuario.getUsuario(_req.body.nombreVerificado).then((v) => {
         if (v == undefined) {
             _res.send("no existe");
@@ -93,14 +104,18 @@ RutasUsuarios.patch("/investigadoresEdit", verificarClaveInv, (_req, _res) => {
                 if(!mailRegex.test(_req.body.correo)){
                     _res.status(400).send("mail invalido")
                 }
-                usuarioTemp.correo = _req.body.correo;
+                else{
+                    usuarioTemp.correo = _req.body.correo;
+                }
             }
-            if (_req.body.contraseña) {
-                if (_req.body.contraseña.length < 8 || !contraRegex.test(_req.body.contraseña)) {
+            if (_req.body.contra) {
+                if (_req.body.contra.length < 8 || !contraRegex.test(_req.body.contra)) {
                     _res.status(400).send("contraseña insegura");
                     return;
                 }
-                usuarioTemp.contraseña = _req.body.contraseña;
+                else{
+                    usuarioTemp.contraseña = sha256(_req.body.contra);
+                }
             }
             if (_req.body.fotoPerfil) {
                 usuarioTemp.fotoPerfil =  "fotoPerfil/" + _req.body.fotoPerfil;
