@@ -30,7 +30,23 @@ export class AccesoEvento{
             hayMas: (await this.collection.find().toArray()).length>=itemsPorPagina*(Number(pagina)+1)
         }
     }
-
+    public async cambiarEstadoEvento(id: string, estado: string, nombre: string){
+        this.getEventoPorId(id).then((v) => {
+            if(v == undefined){
+                return;
+            }
+            else{
+                let contribucionesTemp = v.contribuciones;
+                for(let i = 0; i<contribucionesTemp.length; i++){
+                    if(contribucionesTemp[i].nombreUsuario == nombre && contribucionesTemp[i].estado == "PENDIENTE"){
+                        contribucionesTemp[i].estado = estado;
+                    }
+                }
+                this.collection.updateOne({_id: new ObjectId(id)}, { $set: {contribuciones: contribucionesTemp} });
+                return "todo bien";
+            }
+        })
+    }
     public async subirEvento(evento: Evento){
         this.collection.insertOne(JSON.parse(JSON.stringify(evento)));
     }

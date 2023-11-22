@@ -192,6 +192,22 @@ RutasEventos.get("/eventosTags/busquedaTags/:tags", (_req, _res) => {
         _res.json(v);
     })
 })
+RutasEventos.patch("/eventos/estado/:_id",  (_req, _res) => {
+    accesoEventos.getEventoPorId(_req.params._id).then((v) => {
+        if (!v) {
+            _res.status(400).send("no existe un evento con ese id");
+            return;
+        }
+        accesoEventos.cambiarEstadoEvento(_req.params._id, _req.body.estado, _req.body.nombre).then((b: any) => {
+            if(b != "todo bien"){
+                console.log(b)
+                _res.status(400).send("no se pudo cambiar el estado");
+                return;
+            }
+            _res.status(200).send("estado cambiado");
+        })
+    })
+})
 
 RutasEventos.post("/eventos/contribucion", (req, res) => {
     if (!req.body.contribucion || !req.body.titulo || !req.body.descripcion || !req.body.idEvento || !req.body.nombreVerificado) {
