@@ -126,13 +126,13 @@ RutasEventos.post("/eventos", verificarClaveAdmin, (_req, _res) => {
 
 //borrar evento
 RutasEventos.delete("/eventos/:_id", verificarClaveAdmin, (_req, _res) => {
-    accesoEventos.getEvento(_req.params._id).then((v) => {
+    accesoEventos.getEventoPorId(_req.params._id).then((v) => {
         if (v == undefined) {
             _res.send("no existe");
             return;
         }
         else {
-            accesoEventos.borrarEvento(_req.params._id);
+            accesoEventos.borrarEventoXid(_req.params._id);
             _res.status(204).send();
         }
     })

@@ -44,6 +44,11 @@ export class AccesoEvento{
         const filtro = { nombre: nombre };
         this.collection.findOneAndDelete(filtro);
     }
+    public async borrarEventoXid(id: string){
+        const filtro = { _id: new ObjectId(id) };
+        this.collection.findOneAndDelete(filtro);
+    }
+    
 
     public async getEventoTag(tags: Array<String>, pagina: any, itemsPorPagina: any){
         const filtro = { tags: { $all: tags } };
