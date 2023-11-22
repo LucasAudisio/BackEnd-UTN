@@ -10,7 +10,7 @@ const url: string = "mongodb://127.0.0.1:27017/Gestion-de-eventos-academicos";
 const client: MongoClient = new MongoClient(url);
 const database: Db = client.db("Gestion-de-eventos-academicos");
 
-var accesoLugar: AccesoLugar = new AccesoLugar(url, database, database.collection("LugarDesarrollo"));
+export var accesoLugar: AccesoLugar = new AccesoLugar(url, database, database.collection("LugarDesarrollo"));
 
 const urlImagenes = "http://172.16.255.233:3000/imagenes/"
 
@@ -24,6 +24,10 @@ rutasLugar.get("/lugares", verificarClaveAdmin, (req, res) => {
 // lugar por id
 rutasLugar.get("/lugares/:_id", (req, res) => {
     accesoLugar.getLugar(req.params._id).then((v) => {
+        if(!v){
+            res.status(400).send("este lugar no existe");
+            return;
+        }
         res.json({lugar: v, urlImagenes: urlImagenes});
     })
 })

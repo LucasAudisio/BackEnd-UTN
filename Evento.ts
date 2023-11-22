@@ -1,22 +1,21 @@
+import { Contribucion } from "./Contribucion";
 import { LugarDesarrollo } from "./LugarDesarrollo";
-import { Investigador } from "./Investigador";
-import { Tag } from "./Tag";
 
 export class Evento{
     nombre: String;
     fecha: Date;
     fechaCierreConvocatoria: Date;
     lugarDesarrollo: LugarDesarrollo;
-    tags: Array<Tag>;
-    usuarios: Array<String>;
+    tags: Array<string>;
+    contribuciones: Array<Contribucion>;
     
     constructor(nombre: String, fecha: Date, fechaCierreConvocatoria: Date,
-        lugarDesarrollo: LugarDesarrollo, tags: Array<Tag>, usuarios: Array<String>){
+        lugarDesarrollo: LugarDesarrollo, tags: Array<string>, contribuciones: Array<Contribucion>){
             this.fecha = fecha;
             this.fechaCierreConvocatoria = fechaCierreConvocatoria;
             this.lugarDesarrollo = lugarDesarrollo;
             this.nombre = nombre;
             this.tags = tags;
-            this.usuarios = usuarios;
+            this.contribuciones = contribuciones;
     }
 }

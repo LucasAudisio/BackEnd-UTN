@@ -30,6 +30,7 @@ export function verificarClaveInv(req: any, res: any, next: any){
                 return;
             }
             else{
+                req.body.nombreVerificado = payload.nombre;
                 next()
             }
         })

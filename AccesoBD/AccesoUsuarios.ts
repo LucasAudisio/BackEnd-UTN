@@ -2,7 +2,7 @@ import { Collection, Db } from "mongodb";
 import { createHash } from 'node:crypto';
 import { Investigador } from "../Investigador";
 
-function sha256(content: string) {  
+export function sha256(content: string) {  
     return createHash('sha256').update(content).digest('hex')
 }
 
@@ -33,7 +33,6 @@ export class AccesoUsuario{
     }
 
     public async modificarUsuario(usuario: any){
-        usuario.contraseña = sha256(usuario.contraseña);
         const filtro = { nombre: usuario.nombre };
         this.collection.findOneAndReplace(filtro, JSON.parse(JSON.stringify(usuario)));
     }

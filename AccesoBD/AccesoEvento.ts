@@ -52,4 +52,13 @@ export class AccesoEvento{
     public async getTags(){
         return await this.collection.distinct("tags");
     }
+
+    public async realizarAporte(titulo: string, descripcion: string, nombre: string, contribucion: string, idEvento: any){
+        return await this.collection.updateOne({_id: idEvento}, { $push: {contribuciones: {
+            titulo: titulo,
+            descripcion: descripcion,
+            nombreUsuario: nombre,
+            contribucion: contribucion
+        }} });
+    }
 }

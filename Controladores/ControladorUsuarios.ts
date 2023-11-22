@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { Investigador } from '../Investigador';
-import { AccesoUsuario } from '../AccesoBD/AccesoUsuarios';
+import { AccesoUsuario, sha256 } from '../AccesoBD/AccesoUsuarios';
 import { Db, MongoClient } from 'mongodb';
 import { generarClaveInv, verificarClaveAdmin } from '../jwt';
 
@@ -27,6 +27,10 @@ RutasUsuarios.get("/investigadores", verificarClaveAdmin, (_req, _res) => {
 //datos del usuario segun id
 RutasUsuarios.get("/investigadores/:nombre", verificarClaveAdmin, (_req, _res) => {
     accesoUsuario.getUsuario(_req.params.nombre).then((v) => {
+        if(!v){
+            _res.status(400).send("este usuario no existe");
+            return;
+        }
         _res.send(v);
     })
 })
@@ -54,7 +58,7 @@ RutasUsuarios.post("/investigadores", verificarClaveAdmin, (_req, _res) => {
             return;
         }
         else {
-            const usuarioTemp = new Investigador(_req.body.correo, _req.body.contrasenia, _req.body.nombre, _req.body.fotoPerfil);
+            const usuarioTemp = new Investigador(_req.body.correo, _req.body.contrasenia, _req.body.nombre, "fotoPerfil/" + _req.body.fotoPerfil);
             accesoUsuario.subirUsuario(usuarioTemp);
             _res.json(usuarioTemp);
         }
@@ -86,7 +90,8 @@ RutasUsuarios.patch("/investigadores/:nombre", verificarClaveAdmin, (_req, _res)
             var usuarioTemp = new Investigador(v.correo, v.contraseña, v.nombre, v.foto);
             if (_req.body.correo) {
                 if(!mailRegex.test(_req.body.correo)){
-                    _res.status(400).send("mail invalido")
+                    _res.status(400).send("mail invalido");
+                    return;
                 }
                 usuarioTemp.correo = _req.body.correo;
             }
@@ -95,7 +100,7 @@ RutasUsuarios.patch("/investigadores/:nombre", verificarClaveAdmin, (_req, _res)
                     _res.status(400).send("contraseña insegura");
                     return;
                 }
-                usuarioTemp.contraseña = _req.body.contraseña;
+                usuarioTemp.contraseña = sha256(_req.body.contraseña);
             }
             if (_req.body.fotoPerfil) {
                 usuarioTemp.fotoPerfil = _req.body.fotoPerfil;
@@ -107,7 +112,11 @@ RutasUsuarios.patch("/investigadores/:nombre", verificarClaveAdmin, (_req, _res)
 })
 // Registrarse
 RutasUsuarios.post("/registrarse", (_req, _res) => {
-    console.log("epic")
+    console.log("epic");
+    if(!_req.body.correo || !_req.body.contraseña){
+        _res.status(400).send("no se proporcionaron todos los datos");
+        return;
+    }
     //  mail formato valido
     if (!mailRegex.test(_req.body.correo)) {
         _res.status(400).send("mail invalido");
@@ -140,6 +149,10 @@ RutasUsuarios.post("/registrarse", (_req, _res) => {
 })
 // Login
 RutasUsuarios.post("/login", (_req, _res) => {
+    if(!_req.body.nombre || !_req.body.contraseña){
+        _res.status(400).send("no se proporcionaron todos los datos");
+        return;
+    }
     accesoUsuario.getUsuario(_req.body.nombre).then((b) => {
         if (b) {
             accesoUsuario.login(_req.body.nombre, _req.body.contraseña).then((v) => {
