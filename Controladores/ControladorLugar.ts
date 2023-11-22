@@ -31,6 +31,15 @@ rutasLugar.get("/lugares/:_id", (req, res) => {
         res.json({lugar: v, urlImagenes: urlImagenes});
     })
 })
+rutasLugar.get("/lugaresXnombre/:nombre", (req, res) => {
+    accesoLugar.getLugarPorNombre(req.params.nombre).then((v) => {
+        if(!v){
+            res.status(400).send("este lugar no existe");
+            return;
+        }
+        res.json({lugar: v, urlImagenes: urlImagenes});
+    })
+})
 
 // subir lugar
 rutasLugar.post("/lugares", verificarClaveAdmin, (req, res) => {

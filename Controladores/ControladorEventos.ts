@@ -4,6 +4,7 @@ import { AccesoEvento } from "../AccesoBD/AccesoEvento";
 import { Evento } from "../Evento";
 import { verificarClaveAdmin } from "../jwt";
 import { accesoLugar } from "./ControladorLugar";
+const urlArchivos: string = "http://localhost:3000/archivos/"
 
 const url: string = "mongodb://127.0.0.1:27017/Gestion-de-eventos-academicos";
 const client: MongoClient = new MongoClient(url);
@@ -67,6 +68,7 @@ RutasEventos.get("/eventos/:_id", (_req, _res) => {
             _res.status(400).send("no existe un evento con ese id");
             return;
         }
+        v.urlArchivos = urlArchivos;
         _res.send(v);
     })
 })
@@ -87,7 +89,7 @@ RutasEventos.post("/eventos", verificarClaveAdmin, (_req, _res) => {
     }
 
     if(_req.body.tags){
-        if(!_req.body.tags.isArray()){
+        if(!Array.isArray(_req.body.tags)){
             _res.status(400).send("formato de tags invalido");
             return;
         }
