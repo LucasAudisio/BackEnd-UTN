@@ -73,7 +73,7 @@ RutasEventos.get("/eventos/:_id", (_req, _res) => {
 
 //subir nuevo evento
 RutasEventos.post("/eventos", verificarClaveAdmin, (_req, _res) => {
-    if (!_req.body.nombre || !_req.body.fecha || !_req.body.fechaCierreConvocatoria || !_req.body.lugarDesarrollo) {
+    if (!_req.body.nombre || !_req.body.fecha || !_req.body.fechaCierreConvocatoria || !_req.body.lugarDesarrollo || !_req.body.descripcion) {
         _res.status(400).send("no se proporcionaron todos los datos");
         return;
     }
@@ -116,7 +116,7 @@ RutasEventos.post("/eventos", verificarClaveAdmin, (_req, _res) => {
             else {
                 const eventoTemp: Evento = new Evento(_req.body.nombre, _req.body.fecha,
                     _req.body.fechaCierreConvocatoria, _req.body.lugarDesarrollo, _req.body.tags,
-                    [], _req.body.nombreVerificado);
+                    [], _req.body.nombreVerificado, _req.body.descripcion);
                 accesoEventos.subirEvento(eventoTemp);
                 _res.json(eventoTemp);
             }
@@ -147,7 +147,7 @@ RutasEventos.patch("/eventos/:_id", verificarClaveAdmin, (_req, _res) => {
         }
         else {
             var eventoTemp: Evento = new Evento(v.nombre, v.fecha, v.fechaCierreConvocatoria
-                , v.lugarDesarrollo, v.tags, v.usuarios, v.nombreAdmin);
+                , v.lugarDesarrollo, v.tags, v.usuarios, v.nombreAdmin, v.descripcion);
             if (_req.body.fecha) {
                 if (!isValidDate(_req.body.fecha)) {
                     _res.status(400).send("fecha invalida");
@@ -161,6 +161,9 @@ RutasEventos.patch("/eventos/:_id", verificarClaveAdmin, (_req, _res) => {
                     return;
                 }
                 eventoTemp.fechaCierreConvocatoria = _req.body.fechaCierreConvocatoria;
+            }
+            if(_req.body.descripcion){
+                eventoTemp.descripcion = _req.body.descripcion;
             }
             accesoEventos.modificarEvento(eventoTemp, _req.params._id);
             _res.json(eventoTemp);
@@ -215,7 +218,7 @@ RutasEventos.post("/eventos/contribucion", (req, res) => {
                 return;
             }
         }
-        accesoEventos.realizarAporte(req.body.titulo, req.body.descripcion, req.body.nombreVerificado, req.body.contribucion, req.body.idEvento).then((b) => {
+        accesoEventos.realizarAporte(req.body.titulo, req.body.descripcion, req.body.nombreVerificado, req.body.contribucion, req.body.idEvento, "pendiente").then((b) => {
             res.json(b);
         })
     })

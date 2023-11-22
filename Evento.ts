@@ -9,9 +9,10 @@ export class Evento{
     tags: Array<string>;
     contribuciones: Array<Contribucion>;
     nombreAdmin: string;
+    descripcion: string;
     
     constructor(nombre: String, fecha: Date, fechaCierreConvocatoria: Date,
-        lugarDesarrollo: LugarDesarrollo, tags: Array<string>, contribuciones: Array<Contribucion>, nombreAdmin: string){
+        lugarDesarrollo: LugarDesarrollo, tags: Array<string>, contribuciones: Array<Contribucion>, nombreAdmin: string, descripcion: string){
             this.fecha = fecha;
             this.fechaCierreConvocatoria = fechaCierreConvocatoria;
             this.lugarDesarrollo = lugarDesarrollo;
@@ -19,5 +20,6 @@ export class Evento{
             this.tags = tags;
             this.contribuciones = contribuciones;
             this.nombreAdmin = nombreAdmin;
-    }
+            this.descripcion = descripcion;
+        }
 }
