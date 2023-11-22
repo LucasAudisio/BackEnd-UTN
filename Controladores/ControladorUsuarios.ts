@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { Investigador } from '../Investigador';
 import { AccesoUsuario, sha256 } from '../AccesoBD/AccesoUsuarios';
 import { Db, MongoClient } from 'mongodb';
-import { generarClaveInv, verificarClaveAdmin } from '../jwt';
+import { generarClaveInv, verificarClaveAdmin, verificarClaveInv } from '../jwt';
 
 // Regex
 const mailRegex: RegExp = new RegExp("[A-Za-z0-9]+@[a-z]+\.[a-z]{2,3}");
@@ -79,6 +79,38 @@ RutasUsuarios.delete("/investigadores/:nombre", verificarClaveAdmin, (_req, _res
     })
 })
 
+//modificarse asi mismo
+RutasUsuarios.patch("/investigadoresEdit", verificarClaveInv, (_req, _res) => {
+    console.log(_req.headers.authorization)
+    accesoUsuario.getUsuario(_req.body.nombreVerificado).then((v) => {
+        if (v == undefined) {
+            _res.send("no existe");
+            return;
+        }
+        else {
+            var usuarioTemp = new Investigador(v.correo, v.contraseña, v.nombre, v.fotoPerfil);
+            if (_req.body.correo) {
+                if(!mailRegex.test(_req.body.correo)){
+                    _res.status(400).send("mail invalido")
+                }
+                usuarioTemp.correo = _req.body.correo;
+            }
+            if (_req.body.contraseña) {
+                if (_req.body.contraseña.length < 8 || !contraRegex.test(_req.body.contraseña)) {
+                    _res.status(400).send("contraseña insegura");
+                    return;
+                }
+                usuarioTemp.contraseña = _req.body.contraseña;
+            }
+            if (_req.body.fotoPerfil) {
+                usuarioTemp.fotoPerfil =  "fotoPerfil/" + _req.body.fotoPerfil;
+            }
+            accesoUsuario.modificarUsuario(usuarioTemp);
+            _res.json(usuarioTemp);
+        }
+    })
+})
+
 //modificar parte del usuario
 RutasUsuarios.patch("/investigadores/:nombre", verificarClaveAdmin, (_req, _res) => {
     accesoUsuario.getUsuario(_req.params.nombre).then((v) => {
@@ -87,7 +119,7 @@ RutasUsuarios.patch("/investigadores/:nombre", verificarClaveAdmin, (_req, _res)
             return;
         }
         else {
-            var usuarioTemp = new Investigador(v.correo, v.contraseña, v.nombre, v.foto);
+            var usuarioTemp = new Investigador(v.correo, v.contraseña, v.nombre, v.fotoPerfil);
             if (_req.body.correo) {
                 if(!mailRegex.test(_req.body.correo)){
                     _res.status(400).send("mail invalido");
@@ -103,13 +135,14 @@ RutasUsuarios.patch("/investigadores/:nombre", verificarClaveAdmin, (_req, _res)
                 usuarioTemp.contraseña = sha256(_req.body.contraseña);
             }
             if (_req.body.fotoPerfil) {
-                usuarioTemp.fotoPerfil = _req.body.fotoPerfil;
+                usuarioTemp.fotoPerfil =  "fotoPerfil/" + _req.body.fotoPerfil;
             }
             accesoUsuario.modificarUsuario(usuarioTemp);
             _res.json(usuarioTemp);
         }
     })
 })
+
 // Registrarse
 RutasUsuarios.post("/registrarse", (_req, _res) => {
     console.log("epic");

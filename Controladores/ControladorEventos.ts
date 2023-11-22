@@ -52,8 +52,10 @@ function eliminarTagsRepetidos(tags: Array<string>){
 }
 
 //lista de eventos
-RutasEventos.get("/eventos", (_req, _res) => {
-    accesoEventos.getEventos().then((v) => {
+RutasEventos.get("/eventos", (_req,_res) => {
+    const itemsPorPagina = 8;
+    const pagina = _req.headers?.['x-pagina'] || 0;
+    accesoEventos.getEventos(pagina, itemsPorPagina).then((v)=>{
         _res.send(v);
     })
 })
@@ -114,7 +116,7 @@ RutasEventos.post("/eventos", verificarClaveAdmin, (_req, _res) => {
             else {
                 const eventoTemp: Evento = new Evento(_req.body.nombre, _req.body.fecha,
                     _req.body.fechaCierreConvocatoria, _req.body.lugarDesarrollo, _req.body.tags,
-                    []);
+                    [], _req.body.nombreVerificado);
                 accesoEventos.subirEvento(eventoTemp);
                 _res.json(eventoTemp);
             }
@@ -145,7 +147,7 @@ RutasEventos.patch("/eventos/:_id", verificarClaveAdmin, (_req, _res) => {
         }
         else {
             var eventoTemp: Evento = new Evento(v.nombre, v.fecha, v.fechaCierreConvocatoria
-                , v.lugarDesarrollo, v.tags, v.usuarios);
+                , v.lugarDesarrollo, v.tags, v.usuarios, v.nombreAdmin);
             if (_req.body.fecha) {
                 if (!isValidDate(_req.body.fecha)) {
                     _res.status(400).send("fecha invalida");
@@ -159,13 +161,6 @@ RutasEventos.patch("/eventos/:_id", verificarClaveAdmin, (_req, _res) => {
                     return;
                 }
                 eventoTemp.fechaCierreConvocatoria = _req.body.fechaCierreConvocatoria;
-            }
-            // checkear lugar existe, tags validos y usuarios validos
-            if (_req.body.lugarDesarrollo) {
-                eventoTemp.lugarDesarrollo = _req.body.lugarDesarrollo;
-            }
-            if (_req.body.tags) {
-                eventoTemp.tags = _req.body.tags;
             }
             accesoEventos.modificarEvento(eventoTemp, _req.params._id);
             _res.json(eventoTemp);
@@ -181,8 +176,14 @@ RutasEventos.get("/eventosTags", (_req, _res) => {
 })
 
 //busqueda eventos por tags
-RutasEventos.get("/eventos/busquedaTags", (_req, _res) => {
-    accesoEventos.getEventoTag(_req.body.tags).then((v) => {
+RutasEventos.get("/eventosTags/busquedaTags/:tags", (_req, _res) => {
+    console.log("tags: "+_req.body.tags)
+    var tagsTemp:any = _req.params.tags
+    tagsTemp = tagsTemp.replace(" ","")
+    tagsTemp = tagsTemp.split(",")
+    const itemsPorPagina = 8;
+    const pagina = _req.headers?.['x-pagina'] || 0;
+    accesoEventos.getEventoTag(tagsTemp, pagina, itemsPorPagina).then((v) => {
         _res.json(v);
     })
 })

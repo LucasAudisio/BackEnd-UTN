@@ -44,9 +44,10 @@ rutasLugar.post("/lugares", verificarClaveAdmin, (req, res) => {
             return;
         }
         const lugar = new LugarDesarrollo(req.body.direccion, "fotoLugar/" + req.body.fotoLugar, req.body.nombre);
-        accesoLugar.subirLugar(lugar);
+        accesoLugar.subirLugar(lugar).then((b) => {
+            res.json(lugar);
+        });
 
-        res.json(lugar);
     })
 })
 

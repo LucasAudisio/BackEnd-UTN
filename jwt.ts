@@ -51,6 +51,7 @@ export function generarClaveAdmin(nombre: String): string{
 }
 
 export function verificarClaveAdmin(req: any, res: any, next: any){
+    console.log("verificarAdmin")
     const clave = req.headers.authorization;
 
     if (clave == undefined) {
@@ -59,6 +60,7 @@ export function verificarClaveAdmin(req: any, res: any, next: any){
 
     try {
         const payload: any = jwt.verify(clave, claveSecretaAdmin);
+        req.body.nombreVerificado = payload.nombre;
         accesoAdmin.getUsuario(payload.nombre).then((v) => {
             if(v == undefined){
                 res.status(404).send("usuario no encontrado");

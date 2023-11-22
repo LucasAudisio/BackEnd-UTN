@@ -26,7 +26,7 @@ export class AccesoLugar{
         return await this.collection.findOne(filtro);
     }
 
-    public subirLugar(lugar: LugarDesarrollo){
+    public async subirLugar(lugar: LugarDesarrollo){
         this.collection.insertOne(JSON.parse(JSON.stringify(lugar)));
     }
 

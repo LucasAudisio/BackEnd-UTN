@@ -24,8 +24,11 @@ export class AccesoEvento{
         return usuario;
     }
 
-    public async getEventos(){
-        return await this.collection.find().toArray();
+    public async getEventos(pagina: any, itemsPorPagina: any){
+        return {
+            eventos: await this.collection.find().skip(pagina*itemsPorPagina).limit(itemsPorPagina).toArray(),
+            hayMas: (await this.collection.find().toArray()).length>=itemsPorPagina*(Number(pagina)+1)
+        }
     }
 
     public async subirEvento(evento: Evento){
@@ -42,11 +45,12 @@ export class AccesoEvento{
         this.collection.findOneAndDelete(filtro);
     }
 
-    public async getEventoTag(tags: Array<String>){
-        console.log(tags)
-        const filtro = { tags: { $in: tags } };
-        console.log("filto")
-        return await this.collection.find(filtro).toArray();
+    public async getEventoTag(tags: Array<String>, pagina: any, itemsPorPagina: any){
+        const filtro = { tags: { $all: tags } };
+        return {
+            eventos: await this.collection.find(filtro).skip(pagina*itemsPorPagina).limit(itemsPorPagina).toArray(),
+            hayMas: (await this.collection.find(filtro).toArray()).length>=itemsPorPagina*(Number(pagina)+1)
+        }
     }
 
     public async getTags(){

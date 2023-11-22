@@ -11,36 +11,23 @@ import { rutasLugar } from './Controladores/ControladorLugar';
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, 'imagenes/' + file.fieldname); // Directorio donde se guardarán las imágenes
+      if(file.fieldname == "contribucion"){
+        cb(null, 'archivos/'); // Directorio donde se guardarán las imágenes
+      }
+      else{
+        cb(null, 'imagenes/' + file.fieldname); // Directorio donde se guardarán las imágenes
+      }
     },
     filename: (req, file, cb) => {
         const timestamp = new Date().getTime(); // Obtiene una marca de tiempo única
         const fileExtension = file.originalname.split('.').pop();
         const uniqueFilename = `${timestamp}.${fileExtension}`;
         req.body[file.fieldname] = uniqueFilename
-        console.log(file)
-        console.log(req.body)
         cb(null, uniqueFilename);
     },
 });
-
-const storageArchivos = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'archivos/'); // Directorio donde se guardarán las imágenes
-  },
-  filename: (req, file, cb) => {
-      const timestamp = new Date().getTime(); // Obtiene una marca de tiempo única
-      const fileExtension = file.originalname.split('.').pop();
-      const uniqueFilename = `${timestamp}.${fileExtension}`;
-      req.body[file.fieldname] = uniqueFilename
-      console.log(file)
-      console.log(req.body)
-      cb(null, uniqueFilename);
-  },
-});
   
 const upload = multer({ storage: storage });
-const uploadArchivos = multer({ storage: storageArchivos });
 
 const app = express();
 app.use(cors());
@@ -55,8 +42,7 @@ app.get('/', (_req, _res) => {
 
 //Middlewares
 app.use(bodyParser.json());
-app.use(upload.fields([{ name: 'fotoPerfil' }, { name: 'fotoLugar' }]));
-app.use(uploadArchivos.fields([{ name: 'contribucion' }]));
+app.use(upload.fields([{ name: 'fotoPerfil' }, { name: 'fotoLugar' }, {name: "contribucion"}]));
 app.use('/imagenes', express.static(path.join(__dirname, 'imagenes')));
 app.use('/archivos', express.static(path.join(__dirname, 'archivos')));
 app.use("/administradores", checkSuper);
